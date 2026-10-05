@@ -1,0 +1,409 @@
+import sys
+from PyQt5.QtWidgets import (QApplication, QMainWindow, QWidget, QVBoxLayout,
+                             QHBoxLayout, QLabel, QLineEdit, QPushButton,
+                             QRadioButton, QButtonGroup, QCalendarWidget,
+                             QTimeEdit, QListWidget, QListWidgetItem,
+                             QDoubleSpinBox, QTextEdit, QMessageBox, QStatusBar)
+from PyQt5.QtCore import Qt, QDate, QTime
+
+
+# ==========================================
+# ЗАДАНИЕ 1: Текстовый флаг
+# ==========================================
+class Task1(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Задание 1: Текстовый флаг")
+        # Запрещаем изменение размера
+        self.setFixedSize(400, 300)
+
+        layout = QVBoxLayout()
+
+        # Группа 1: Первая полоса
+        layout.addWidget(QLabel("Выберите цвет 1-й полосы:"))
+        self.group1 = QButtonGroup(self)
+        h_layout1 = QHBoxLayout()
+        colors1 = ["Красный", "Зеленый", "Синий", "Желтый"]
+        for i, color in enumerate(colors1):
+            rb = QRadioButton(color)
+            self.group1.addButton(rb, i)
+            h_layout1.addWidget(rb)
+            if i == 0: rb.setChecked(True)  # По умолчанию
+        layout.addLayout(h_layout1)
+
+        # Группа 2: Вторая полоса
+        layout.addWidget(QLabel("Выберите цвет 2-й полосы:"))
+        self.group2 = QButtonGroup(self)
+        h_layout2 = QHBoxLayout()
+        colors2 = ["Красный", "Зеленый", "Синий", "Желтый"]
+        for i, color in enumerate(colors2):
+            rb = QRadioButton(color)
+            self.group2.addButton(rb, i)
+            h_layout2.addWidget(rb)
+            if i == 1: rb.setChecked(True)
+        layout.addLayout(h_layout2)
+
+        # Группа 3: Третья полоса
+        layout.addWidget(QLabel("Выберите цвет 3-й полосы:"))
+        self.group3 = QButtonGroup(self)
+        h_layout3 = QHBoxLayout()
+        colors3 = ["Красный", "Зеленый", "Синий", "Желтый"]
+        for i, color in enumerate(colors3):
+            rb = QRadioButton(color)
+            self.group3.addButton(rb, i)
+            h_layout3.addWidget(rb)
+            if i == 2: rb.setChecked(True)
+        layout.addLayout(h_layout3)
+
+        # Кнопка
+        btn = QPushButton("Нарисовать")
+        btn.clicked.connect(self.draw_flag)
+        layout.addWidget(btn)
+
+        self.setLayout(layout)
+
+    def draw_flag(self):
+        c1 = self.group1.checkedButton().text()
+        c2 = self.group2.checkedButton().text()
+        c3 = self.group3.checkedButton().text()
+        QMessageBox.information(self, "Результат", f"Флаг: {c1}, {c2}, {c3}")
+
+
+# ==========================================
+# ЗАДАНИЕ 2: Ежедневник
+# ==========================================
+class Task2(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Задание 2: Ежедневник")
+        self.resize(600, 400)
+
+        layout = QHBoxLayout()
+
+        # Левая часть: Календарь и время
+        left_layout = QVBoxLayout()
+        self.calendar = QCalendarWidget()
+        self.time_edit = QTimeEdit()
+        self.time_edit.setDisplayFormat("HH:mm")
+
+        self.input_event = QLineEdit()
+        self.input_event.setPlaceholderText("Название события...")
+
+        btn_add = QPushButton("Добавить")
+        btn_add.clicked.connect(self.add_event)
+
+        left_layout.addWidget(QLabel("Дата:"))
+        left_layout.addWidget(self.calendar)
+        left_layout.addWidget(QLabel("Время:"))
+        left_layout.addWidget(self.time_edit)
+        left_layout.addWidget(QLabel("Событие:"))
+        left_layout.addWidget(self.input_event)
+        left_layout.addWidget(btn_add)
+
+        # Правая часть: Список
+        right_layout = QVBoxLayout()
+        self.list_widget = QListWidget()
+        right_layout.addWidget(QLabel("Список событий (сортировка по дате):"))
+        right_layout.addWidget(self.list_widget)
+
+        layout.addLayout(left_layout)
+        layout.addLayout(right_layout)
+        self.setLayout(layout)
+
+    def add_event(self):
+        date = self.calendar.selectedDate().toString("yyyy-MM-dd")
+        time = self.time_edit.time().toString("HH:mm")
+        name = self.input_event.text()
+
+        if not name:
+            QMessageBox.warning(self, "Ошибка", "Введите название события!")
+            return
+
+        # Формируем строку для сортировки
+        item_text = f"{date} {time} - {name}"
+
+        # Вставляем с сортировкой
+        # (Простой способ: добавляем и сортируем весь список)
+        self.list_widget.addItem(item_text)
+        self.list_widget.sortItems()
+        self.input_event.clear()
+
+
+# ==========================================
+# ЗАДАНИЕ 3: Записная книжка
+# ==========================================
+class Task3(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Задание 3: Записная книжка")
+        self.resize(400, 300)
+
+        layout = QVBoxLayout()
+
+        # Поля ввода
+        form_layout = QHBoxLayout()
+        self.input_name = QLineEdit()
+        self.input_name.setPlaceholderText("Имя контакта")
+        self.input_phone = QLineEdit()
+        self.input_phone.setPlaceholderText("Номер телефона")
+
+        form_layout.addWidget(QLabel("Имя:"))
+        form_layout.addWidget(self.input_name)
+        form_layout.addWidget(QLabel("Телефон:"))
+        form_layout.addWidget(self.input_phone)
+
+        # Кнопка
+        btn_add = QPushButton("Добавить контакт")
+        btn_add.clicked.connect(self.add_contact)
+
+        # Список
+        self.list_widget = QListWidget()
+
+        layout.addLayout(form_layout)
+        layout.addWidget(btn_add)
+        layout.addWidget(QLabel("Контакты:"))
+        layout.addWidget(self.list_widget)
+
+        self.setLayout(layout)
+
+    def add_contact(self):
+        name = self.input_name.text()
+        phone = self.input_phone.text()
+
+        if not name or not phone:
+            QMessageBox.warning(self, "Ошибка", "Заполните все поля!")
+            return
+
+        self.list_widget.addItem(f"{name}: {phone}")
+        self.input_name.clear()
+        self.input_phone.clear()
+
+
+# ==========================================
+# ЗАДАНИЕ 4: Игра "Псевдоним" (Ним)
+# ==========================================
+class Task4(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Задание 4: Игра 'Псевдоним'")
+        self.resize(400, 300)
+
+        self.total_stones = 0
+        self.current_stones = 0
+
+        layout = QVBoxLayout()
+
+        # Настройка игры
+        self.spin_stones = QDoubleSpinBox()  # Используем спинбокс для ввода N
+        self.spin_stones.setDecimals(0)
+        self.spin_stones.setRange(5, 100)
+        self.spin_stones.setValue(15)
+
+        btn_start = QPushButton("Начать новую игру")
+        btn_start.clicked.connect(self.start_game)
+
+        # Игровое поле
+        self.label_stones = QLabel("Камней на столе: 0")
+        self.label_stones.setStyleSheet("font-size: 18px; font-weight: bold;")
+
+        self.status_label = QLabel("Игра не начата")
+
+        # Ход игрока
+        self.spin_take = QDoubleSpinBox()
+        self.spin_take.setDecimals(0)
+        self.spin_take.setRange(1, 3)
+        self.spin_take.setValue(1)
+
+        btn_take = QPushButton("Взять камни")
+        btn_take.clicked.connect(self.player_move)
+
+        layout.addWidget(QLabel("Начальное количество камней (N):"))
+        layout.addWidget(self.spin_stones)
+        layout.addWidget(btn_start)
+        layout.addWidget(self.label_stones)
+        layout.addWidget(self.status_label)
+
+        layout.addWidget(QLabel("Сколько камней взять (1-3):"))
+        layout.addWidget(self.spin_take)
+        layout.addWidget(btn_take)
+
+        self.setLayout(layout)
+
+    def start_game(self):
+        self.total_stones = int(self.spin_stones.value())
+        self.current_stones = self.total_stones
+        self.label_stones.setText(f"Камней на столе: {self.current_stones}")
+        self.status_label.setText("Ваш ход! (Игрок ходит первым)")
+        self.spin_take.setEnabled(True)
+
+    def player_move(self):
+        if self.current_stones <= 0:
+            return
+
+        take = int(self.spin_take.value())
+
+        # Проверка на ошибку
+        if take > self.current_stones:
+            QMessageBox.warning(self, "Ошибка", "Нельзя взять больше камней, чем есть!")
+            return
+        if take > 3:
+            QMessageBox.warning(self, "Ошибка", "Можно брать не более 3 камней!")
+            return
+
+        # Ход игрока
+        self.current_stones -= take
+        self.label_stones.setText(f"Камней на столе: {self.current_stones}")
+
+        if self.current_stones == 0:
+            self.status_label.setText("Вы выиграли!")
+            self.spin_take.setEnabled(False)
+            return
+
+        # Ход ИИ (Побеждающая стратегия)
+        # ИИ выигрывает, если оставляет число кратное 4.
+        # Если сейчас не кратно 4, он берет столько, чтобы стало кратно 4.
+        # Если кратно 4, он берет 1 (или любое, так как игрок выиграет при идеальной игре).
+
+        remainder = self.current_stones % 4
+        if remainder != 0:
+            ai_take = remainder
+        else:
+            ai_take = 1  # Если позиция проигрышная, берем 1
+
+        # Но ИИ не может взять больше 3 или больше чем есть
+        ai_take = min(ai_take, 3, self.current_stones)
+
+        self.current_stones -= ai_take
+        self.label_stones.setText(f"Камней на столе: {self.current_stones}")
+        self.status_label.setText(f"ИИ взял {ai_take} камней. Ваш ход!")
+
+        if self.current_stones == 0:
+            self.status_label.setText("ИИ выиграл!")
+            self.spin_take.setEnabled(False)
+
+
+# ==========================================
+# ЗАДАНИЕ 5: Антиплагиат
+# ==========================================
+class Task5(QMainWindow):  # Используем QMainWindow для StatusBar
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Задание 5: Антиплагиат")
+        self.resize(600, 500)
+
+        central_widget = QWidget()
+        self.setCentralWidget(central_widget)
+        layout = QVBoxLayout()
+
+        # Порог
+        threshold_layout = QHBoxLayout()
+        threshold_layout.addWidget(QLabel("Порог срабатывания (%):"))
+        self.spin_threshold = QDoubleSpinBox()
+        self.spin_threshold.setRange(0, 100)
+        self.spin_threshold.setValue(50.0)
+        threshold_layout.addWidget(self.spin_threshold)
+        layout.addLayout(threshold_layout)
+
+        # Тексты
+        text_layout = QHBoxLayout()
+        self.text1 = QTextEdit()
+        self.text1.setPlaceholderText("Текст 1...")
+        self.text2 = QTextEdit()
+        self.text2.setPlaceholderText("Текст 2...")
+
+        text_layout.addWidget(self.text1)
+        text_layout.addWidget(self.text2)
+        layout.addLayout(text_layout)
+
+        # Кнопка
+        btn_check = QPushButton("Проверить на плагиат")
+        btn_check.clicked.connect(self.check_plagiarism)
+        layout.addWidget(btn_check)
+
+        central_widget.setLayout(layout)
+
+        # Статус бар
+        self.status_bar = QStatusBar()
+        self.setStatusBar(self.status_bar)
+
+    def check_plagiarism(self):
+        t1 = self.text1.toPlainText().strip()
+        t2 = self.text2.toPlainText().strip()
+
+        if not t1 or not t2:
+            self.status_bar.setStyleSheet("color: orange;")
+            self.status_bar.showMessage("Введите текст в оба поля!")
+            return
+
+        # Простой алгоритм: сравнение строк
+        lines1 = t1.split('\n')
+        lines2 = t2.split('\n')
+
+        # Убираем пустые строки
+        lines1 = [l for l in lines1 if l.strip()]
+        lines2 = [l for l in lines2 if l.strip()]
+
+        if len(lines1) == 0:
+            match_percent = 0
+        else:
+            matches = 0
+            for line in lines1:
+                if line in lines2:
+                    matches += 1
+            match_percent = (matches / len(lines1)) * 100
+
+        threshold = self.spin_threshold.value()
+
+        if match_percent >= threshold:
+            self.status_bar.setStyleSheet("color: red;")
+            self.status_bar.showMessage(f"Плагиат! Совпадение: {match_percent:.1f}% (Порог: {threshold}%)")
+        else:
+            self.status_bar.setStyleSheet("color: green;")
+            self.status_bar.showMessage(f"Уникально! Совпадение: {match_percent:.1f}% (Порог: {threshold}%)")
+
+
+# ==========================================
+# ГЛАВНОЕ МЕНЮ
+# ==========================================
+class MainMenu(QMainWindow):
+    def __init__(self):
+        super().__init__()
+        self.setWindowTitle("Лабораторная работа 2 - Меню")
+        self.setGeometry(300, 300, 300, 400)
+
+        self.central_widget = QWidget()
+        self.setCentralWidget(self.central_widget)
+        layout = QVBoxLayout()
+
+        label = QLabel("Выберите задание:")
+        label.setAlignment(Qt.AlignCenter)
+        layout.addWidget(label)
+
+        for i in range(1, 6):
+            btn = QPushButton(f"Задание {i}")
+            btn.clicked.connect(lambda checked, n=i: self.open_task(n))
+            layout.addWidget(btn)
+
+        self.central_widget.setLayout(layout)
+        self.windows = []
+
+    def open_task(self, number):
+        if number == 1:
+            self.windows.append(Task1())
+        elif number == 2:
+            self.windows.append(Task2())
+        elif number == 3:
+            self.windows.append(Task3())
+        elif number == 4:
+            self.windows.append(Task4())
+        elif number == 5:
+            self.windows.append(Task5())
+
+        self.windows[-1].show()
+
+
+if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    menu = MainMenu()
+    menu.show()
+    sys.exit(app.exec_())
